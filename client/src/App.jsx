@@ -1,29 +1,44 @@
-import { useState } from "react";
-import "./App.css";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import './App.css';
 
-const URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+export default function App() {
+  const [pong, setPong] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-function App() {
-  const [result, setResult] = useState("");
+  const fetchPing = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get('http://localhost:3000/ping');
+      setPong(response.data.pong);
+    } catch (err) {
+      setError('Error: ' + err.message);
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="App">
+    <div className="container">
       <h1>MERN Render</h1>
-
-      <button
-        onClick={async () => {
-          const res = await fetch(`${URL}/ping`);
-          const data = await res.json();
-          console.log(data);
-          setResult(data);
-        }}
-      >
-        Users
+      
+      <button onClick={fetchPing} disabled={loading}>
+        {loading ? 'Cargando...' : 'Users'}
       </button>
 
-      <pre>{JSON.stringify(result, null, 2)}</pre>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {pong && (
+        <div>
+          <h2 style={{ color: '#C2185B' }}>Respuesta del Servidor:</h2>
+          <p style={{ fontSize: '1.2rem', color: '#F48FB1' }}>
+            <strong>"pong": "{pong}"</strong>
+          </p>
+        </div>
+      )}
     </div>
   );
 }
-
-export default App;
